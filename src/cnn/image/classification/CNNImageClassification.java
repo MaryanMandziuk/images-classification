@@ -60,7 +60,7 @@ public class CNNImageClassification {
     protected static final String [] allowedExtensions = BaseImageLoader.ALLOWED_FORMATS;
     
     public static void main(String[] args) {
-        int nChannels = 3;
+          int nChannels = 3;
         int outputNum = 10;
 //        int numExamples = 80;
         int batchSize = 10;
@@ -84,12 +84,12 @@ public class CNNImageClassification {
         BalancedPathFilter pathFilter = new BalancedPathFilter(randNumGen, allowedExtensions, labelMaker);
 
         //Split the image files into train and test. Specify the train test split as 80%,20%
-        InputSplit[] filesInDirSplit = filesInDir.sample(pathFilter, 70, 30);
-//        InputSplit[] filesInDirSplitTest = filesInDir.sample(pathFilter, 0, 100);
+        InputSplit[] filesInDirSplit = filesInDir.sample(pathFilter, 100, 0);
+        InputSplit[] filesInDirSplitTest = filesInDir.sample(pathFilter, 0, 100);
         
         
         InputSplit trainData = filesInDirSplit[0];
-        InputSplit testData = filesInDirSplit[1];
+        InputSplit testData = filesInDirSplitTest[1];
         
         
         System.out.println("train = " + trainData.length());
@@ -142,7 +142,7 @@ public class CNNImageClassification {
                         .build())
                 .layer(3, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
                         .kernelSize(2,2)
-                        .stride(1,1)
+                        .stride(2,2)
                         .build())
                 .layer(4, new DenseLayer.Builder().activation("relu")
                         .nOut(500).build())
@@ -157,8 +157,8 @@ public class CNNImageClassification {
                 MultiLayerConfiguration b = new NeuralNetConfiguration.Builder()
                 .seed(seed)
                 .iterations(iterations)
-                .regularization(false).l2(0.005) // 0.0001, 0.0005
-                .learningRate(0.0001) //  0.00001, 0.00005, 0.000001
+                .regularization(false).l2(0.005) // tried 0.0001, 0.0005
+                .learningRate(0.0001) // tried 0.00001, 0.00005, 0.000001
                 .weightInit(WeightInit.XAVIER)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .updater(Updater.NESTEROVS).momentum(0.9)
@@ -167,7 +167,7 @@ public class CNNImageClassification {
                         //nIn and nOut specify depth. nIn here is the nChannels and nOut is the number of filters to be applied
                         .nIn(nChannels)
                         .stride(1, 1)
-                        .nOut(50) //  10, 20, 40, 50
+                        .nOut(50) // tried 10, 20, 40, 50
                         .activation("relu")
                         .build())
                 .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
@@ -176,7 +176,7 @@ public class CNNImageClassification {
                         .build())
                 .layer(2, new ConvolutionLayer.Builder(5, 5)
                         .stride(1, 1)
-                        .nOut(100) //  25, 50, 100
+                        .nOut(100) // tried 25, 50, 100
                         .activation("relu")
                         .build())
                 .layer(3, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
@@ -211,20 +211,22 @@ public class CNNImageClassification {
 //            System.out.println("*** Completed epoch - " + i + "  ***");
 
             System.out.println("Evaluate model....");
-            Evaluation eval = new Evaluation(outputNum);
-            while(dataIterTest.hasNext()){
-                DataSet ds = dataIterTest.next();
-                INDArray output = model.output(ds.getFeatureMatrix(), false);
-                eval.eval(ds.getLabels(), output);
-            }
-            System.out.println(eval.stats());
-            dataIterTest.reset();
+//            Evaluation eval = new Evaluation(outputNum);
+//            while(dataIterTest.hasNext()){
+//                DataSet ds = dataIterTest.next();
+//                INDArray output = model.output(ds.getFeatureMatrix(), false);
+//                eval.eval(ds.getLabels(), output);
+//            }
+//            System.out.println(eval.stats());
+//            dataIterTest.reset();
 //        }
-        System.out.println("****************Example finished********************");
+        
         
 
          Evaluation eval1 =model.evaluate(dataIterTest);
          System.out.println(eval1.stats());
+         
+         System.out.println("****************Example finished********************");
     }
     
 }
